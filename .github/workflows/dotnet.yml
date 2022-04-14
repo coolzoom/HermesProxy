@@ -46,7 +46,8 @@ jobs:
     - name: zip it
       run: |
            cd ${{github.workspace}}/HermesProxy/bin/x64/Debug
-           7z a -tzip ${{env.ARCHIVE_FILENAME}} net5.0
+           move ${{github.workspace}}/HermesProxy/bin/x64/Debug/net5.0 ${{github.workspace}}/HermesProxy/bin/x64/Debug/aClassicProxy
+           7z a -tzip ${{env.ARCHIVE_FILENAME}} aClassicProxy
            
     - name: Archive this artefact
       uses: actions/upload-artifact@v2
