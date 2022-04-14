@@ -1,0 +1,74 @@
+name: .NET
+
+on:
+  push:
+    branches: [ classic ]
+  pull_request:
+    branches: [ classic ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 5.0.x
+        
+    #- name: Restore dependencies
+    #  run: dotnet restore
+     
+      
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+      
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+      
+    - name: Restore Packages
+      run: nuget restore HermesProxy.sln 
+      
+    #not working 
+    #- name: dotnet test
+    #  run: dotnet build
+      
+    - name: Build app
+      run: msbuild HermesProxy.sln -property:Configuration=Debug -property:Platform=x64
+
+    - name: Create Upload File Name
+      run: |
+          echo "ARCHIVE_FILENAME=proxy-$(git rev-parse --short HEAD).zip" >> $env:GITHUB_ENV
+          
+    # final position D:\a\WoW-Launcher\WoW-Launcher\build\Debug\bin\
+    - name: zip it
+      run: |
+           cd ${{github.workspace}}/build/Debug
+           7z a -tzip ${{env.ARCHIVE_FILENAME}} bin
+           
+    - name: Archive this artefact
+      uses: actions/upload-artifact@v2
+      with:
+          name: snapshot-devbuild
+          path: "${{github.workspace}}/build/Debug/${{env.ARCHIVE_FILENAME}}"
+
+    - name: Download artifact snapshot-Release
+      uses: actions/download-artifact@v1
+      with:
+        name: snapshot-devbuild
+        path: all_snapshots
+
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+    - name: Upload snapshot
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build(${{ steps.date.outputs.date }})"
+        files: all_snapshots
