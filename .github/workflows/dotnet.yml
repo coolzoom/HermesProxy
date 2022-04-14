@@ -2,9 +2,9 @@ name: .NET
 
 on:
   push:
-    branches: [ classic ]
+    branches: [ cypher_proxy ]
   pull_request:
-    branches: [ classic ]
+    branches: [ cypher_proxy ]
 
 jobs:
   build:
