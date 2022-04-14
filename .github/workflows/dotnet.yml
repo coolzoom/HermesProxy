@@ -40,7 +40,7 @@ jobs:
 
     - name: Create Upload File Name
       run: |
-          echo "ARCHIVE_FILENAME=proxy-$(git rev-parse --short HEAD).zip" >> $env:GITHUB_ENV
+          echo "ARCHIVE_FILENAME=hermesproxy-$(git rev-parse --short HEAD).zip" >> $env:GITHUB_ENV
           
     # final position D:\a\WoW-Launcher\WoW-Launcher\build\Debug\bin\
     - name: zip it
