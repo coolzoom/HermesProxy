@@ -18,7 +18,7 @@ name: Scheduled Merge Remote Action
 on: 
   push:
   schedule:
-    - cron: '0 0,12 * * *'
+    - cron: '0 0,11 * * *'
     # runs at minutes 0 of 0 and 12th hour of everyday
 
 jobs:
