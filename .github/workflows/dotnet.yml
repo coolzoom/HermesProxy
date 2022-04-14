@@ -45,14 +45,14 @@ jobs:
     # final position D:\a\WoW-Launcher\WoW-Launcher\build\Debug\bin\
     - name: zip it
       run: |
-           cd ${{github.workspace}}/build/Debug
-           7z a -tzip ${{env.ARCHIVE_FILENAME}} bin
+           cd ${{github.workspace}}/HermesProxy/bin/x64/Debug
+           7z a -tzip ${{env.ARCHIVE_FILENAME}} net5.0
            
     - name: Archive this artefact
       uses: actions/upload-artifact@v2
       with:
           name: snapshot-devbuild
-          path: "${{github.workspace}}/build/Debug/${{env.ARCHIVE_FILENAME}}"
+          path: "${{github.workspace}}/HermesProxy/bin/x64/Debug/${{env.ARCHIVE_FILENAME}}"
 
     - name: Download artifact snapshot-Release
       uses: actions/download-artifact@v1
