@@ -80,6 +80,7 @@ namespace HermesProxy
         public Dictionary<WowGuid64, ushort> ObjectSpawnCount = new Dictionary<WowGuid64, ushort>();
         public HashSet<WowGuid128> HunterPetGuids = new HashSet<WowGuid128>();
         public Dictionary<WowGuid128, Array<ArenaTeamInspectData>> PlayerArenaTeams = new Dictionary<WowGuid128, Array<ArenaTeamInspectData>>();
+        public HashSet<string> AddonPrefixes = new HashSet<string>();
 
         public ArenaTeamInspectData GetArenaTeamDataForPlayer(WowGuid128 guid, byte slot)
         {
@@ -417,6 +418,7 @@ namespace HermesProxy
         public uint Build;
         public Framework.Realm.RealmId RealmId;
         public GameSessionData GameState = new();
+        public AccountDataManager AccountDataMgr;
         public WorldSocket RealmSocket;
         public WorldSocket InstanceSocket;
         public AuthClient AuthClient;
