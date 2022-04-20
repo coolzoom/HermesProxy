@@ -23,6 +23,8 @@ example start.bat
 ```
 
 - for vmangos, open realmd.conf set StrictVersionCheck=0
+- for public serever just change <add key="ExternalAddress" value="111.111.111.111" />, realmd database can remain 127.0.0.1
+
 
 ## Acknowledgements
 
