@@ -51,6 +51,7 @@ namespace HermesProxy
         public uint LastWhoRequestId;
         public WowGuid128 CurrentPetGuid;
         public ClientCastRequest CurrentClientCast;
+        public ClientCastRequest CurrentClientMeleeCast;
         public ClientCastRequest CurrentClientPetCast;
         public List<ClientCastRequest> PendingClientCasts = new List<ClientCastRequest>();
         public List<ClientCastRequest> PendingClientPetCasts = new List<ClientCastRequest>();
@@ -84,6 +85,10 @@ namespace HermesProxy
         public Dictionary<byte, Dictionary<byte, int>> FlatSpellMods = new Dictionary<byte, Dictionary<byte, int>>();
         public Dictionary<byte, Dictionary<byte, int>> PctSpellMods = new Dictionary<byte, Dictionary<byte, int>>();
 
+        public sbyte GetCurrentPartyIndex()
+        {
+            return (sbyte)(IsInBattleground() ? 1 : 0);
+        }
         public void SetFlatSpellMod(byte spellMod, byte spellMask, int amount)
         {
             if (FlatSpellMods.ContainsKey(spellMod))
