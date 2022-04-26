@@ -181,35 +181,41 @@ namespace HermesProxy.World.Client
             // resend spell mods on player create
             if (activePlayerUpdateIndex >= 0)
             {
-                foreach (var modItr in GetSession().GameState.FlatSpellMods)
+                if (GetSession().GameState.FlatSpellMods.Count > 0)
                 {
-                    foreach (var dataItr in modItr.Value)
+                    SetSpellModifier spell = new SetSpellModifier(Opcode.SMSG_SET_FLAT_SPELL_MODIFIER);
+                    foreach (var modItr in GetSession().GameState.FlatSpellMods)
                     {
-                        SetSpellModifier spell = new SetSpellModifier(Opcode.SMSG_SET_FLAT_SPELL_MODIFIER);
                         SpellModifierInfo mod = new SpellModifierInfo();
-                        SpellModifierData data = new SpellModifierData();
-                        data.ClassIndex = dataItr.Key;
                         mod.ModIndex = modItr.Key;
-                        data.ModifierValue = dataItr.Value;
-                        mod.ModifierData.Add(data);
+                        foreach (var dataItr in modItr.Value)
+                        {
+                            SpellModifierData data = new SpellModifierData();
+                            data.ClassIndex = dataItr.Key;
+                            data.ModifierValue = dataItr.Value;
+                            mod.ModifierData.Add(data);
+                        }
                         spell.Modifiers.Add(mod);
-                        SendPacketToClient(spell);
                     }
+                    SendPacketToClient(spell);
                 }
-                foreach (var modItr in GetSession().GameState.PctSpellMods)
+                if (GetSession().GameState.PctSpellMods.Count > 0)
                 {
-                    foreach (var dataItr in modItr.Value)
+                    SetSpellModifier spell = new SetSpellModifier(Opcode.SMSG_SET_PCT_SPELL_MODIFIER);
+                    foreach (var modItr in GetSession().GameState.PctSpellMods)
                     {
-                        SetSpellModifier spell = new SetSpellModifier(Opcode.SMSG_SET_PCT_SPELL_MODIFIER);
                         SpellModifierInfo mod = new SpellModifierInfo();
-                        SpellModifierData data = new SpellModifierData();
-                        data.ClassIndex = dataItr.Key;
                         mod.ModIndex = modItr.Key;
-                        data.ModifierValue = dataItr.Value;
-                        mod.ModifierData.Add(data);
+                        foreach (var dataItr in modItr.Value)
+                        {
+                            SpellModifierData data = new SpellModifierData();
+                            data.ClassIndex = dataItr.Key;
+                            data.ModifierValue = dataItr.Value;
+                            mod.ModifierData.Add(data);
+                        }
                         spell.Modifiers.Add(mod);
-                        SendPacketToClient(spell);
                     }
+                    SendPacketToClient(spell);
                 }
             }
 
@@ -731,66 +737,19 @@ namespace HermesProxy.World.Client
                 moveInfo.ReadMovementInfoLegacy(packet, GetSession().GameState);
                 var moveFlags = moveInfo.Flags;
 
-                var speeds = 6;
-                if (LegacyVersion.AddedInVersion(ClientVersionBuild.V3_0_2_9056))
-                    speeds = 9;
-                else if (LegacyVersion.AddedInVersion(ClientVersionBuild.V2_0_1_6180))
-                    speeds = 8;
-
-                for (var i = 0; i < speeds; ++i)
+                moveInfo.WalkSpeed = packet.ReadFloat();
+                moveInfo.RunSpeed = packet.ReadFloat();
+                moveInfo.RunBackSpeed = packet.ReadFloat();
+                moveInfo.SwimSpeed = packet.ReadFloat();
+                moveInfo.SwimBackSpeed = packet.ReadFloat();
+                if (LegacyVersion.AddedInVersion(ClientVersionBuild.V2_0_1_6180))
                 {
-                    var speedType = (SpeedType)i;
-                    var speed = packet.ReadFloat();
-
-                    switch (speedType)
-                    {
-                        case SpeedType.Walk:
-                        {
-                            moveInfo.WalkSpeed = speed;
-                            break;
-                        }
-                        case SpeedType.Run:
-                        {
-                            moveInfo.RunSpeed = speed;
-                            break;
-                        }
-                        case SpeedType.RunBack:
-                        {
-                            moveInfo.RunBackSpeed = speed;
-                            break;
-                        }
-                        case SpeedType.Swim:
-                        {
-                            moveInfo.SwimSpeed = speed;
-                            break;
-                        }
-                        case SpeedType.SwimBack:
-                        {
-                            moveInfo.SwimBackSpeed = speed;
-                            break;
-                        }
-                        case SpeedType.Turn:
-                        {
-                            moveInfo.TurnRate = speed;
-                            break;
-                        }
-                        case SpeedType.Fly:
-                        {
-                            moveInfo.FlightSpeed = speed;
-                            break;
-                        }
-                        case SpeedType.FlyBack:
-                        {
-                            moveInfo.FlightBackSpeed = speed;
-                            break;
-                        }
-                        case SpeedType.Pitch:
-                        {
-                            moveInfo.PitchRate = speed;
-                            break;
-                        }
-                    }
+                    moveInfo.FlightSpeed = packet.ReadFloat();
+                    moveInfo.FlightBackSpeed = packet.ReadFloat();
                 }
+                moveInfo.TurnRate = packet.ReadFloat();
+                if (LegacyVersion.AddedInVersion(ClientVersionBuild.V3_0_2_9056))
+                    moveInfo.PitchRate = packet.ReadFloat();
 
                 if (moveFlags.HasAnyFlag(MovementFlagWotLK.SplineEnabled))
                 {
