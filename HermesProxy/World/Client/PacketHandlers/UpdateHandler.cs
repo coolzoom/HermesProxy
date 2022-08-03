@@ -1,4 +1,6 @@
-﻿using Framework.GameMath;
+﻿//#define DEBUG_UPDATES
+
+using Framework.GameMath;
 using Framework.Logging;
 using Framework.Util;
 using HermesProxy.Enums;
@@ -91,6 +93,8 @@ namespace HermesProxy.World.Client
                         {
                             if (!GetSession().GameState.ObjectSpawnCount.ContainsKey(oldGuid))
                                 GetSession().GameState.ObjectSpawnCount.Add(oldGuid, 0);
+                            else if (oldGuid.GetHighType() == HighGuidType.GameObject && GetSession().GameState.DespawnedGameObjects.Contains(oldGuid))
+                                    GetSession().GameState.IncrementObjectSpawnCounter(oldGuid);
                         }
 
                         var guid = oldGuid.To128(GetSession().GameState);
@@ -344,17 +348,18 @@ namespace HermesProxy.World.Client
                 });
         }
 
-        private const bool DebugUpdates = false;
         private void PrintString(string txt, params object[] indexes)
         {
-            if (DebugUpdates)
-                Console.WriteLine("{0}{1}", GetIndexString(indexes), txt);
+#if DEBUG_UPDATES
+            Console.WriteLine("{0}{1}", GetIndexString(indexes), txt);
+#endif
         }
 
         private T PrintValue<T>(string name, T obj, params object[] indexes)
         {
-            if (DebugUpdates)
-                Console.WriteLine("{0}{1}: {2}", GetIndexString(indexes), name, obj);
+#if DEBUG_UPDATES
+            Console.WriteLine("{0}{1}: {2}", GetIndexString(indexes), name, obj);
+#endif
             return obj;
         }
 
@@ -1597,6 +1602,17 @@ namespace HermesProxy.World.Client
                 if (UNIT_FIELD_MOUNTDISPLAYID >= 0 && updateMaskArray[UNIT_FIELD_MOUNTDISPLAYID])
                 {
                     updateData.UnitData.MountDisplayID = updates[UNIT_FIELD_MOUNTDISPLAYID].Int32Value;
+
+                    if (!isCreate && guid == GetSession().GameState.CurrentPlayerGuid &&
+                        LegacyVersion.RemovedInVersion(ClientVersionBuild.V3_0_2_9056))
+                    {
+                        MoveSetCollisionHeight height = new();
+                        height.MoverGUID = guid;
+                        height.Height = updateData.UnitData.MountDisplayID != 0 ? 3.081099f : 2.438083f;
+                        height.MountDisplayID = (uint)updateData.UnitData.MountDisplayID;
+                        height.Reason = 1; // Mount
+                        SendPacketToClient(height);
+                    }
                 }
                 int UNIT_FIELD_MINDAMAGE = LegacyVersion.GetUpdateField(UnitField.UNIT_FIELD_MINDAMAGE);
                 if (UNIT_FIELD_MINDAMAGE >= 0 && updateMaskArray[UNIT_FIELD_MINDAMAGE])
@@ -1691,6 +1707,22 @@ namespace HermesProxy.World.Client
                 if (UNIT_CREATED_BY_SPELL >= 0 && updateMaskArray[UNIT_CREATED_BY_SPELL])
                 {
                     updateData.UnitData.CreatedBySpell = updates[UNIT_CREATED_BY_SPELL].Int32Value;
+
+                    if (LegacyVersion.RemovedInVersion(ClientVersionBuild.V2_0_1_6180) &&
+                        isCreate && updateData.UnitData.CreatedBy == GetSession().GameState.CurrentPlayerGuid)
+                    {
+                        int totemSlot = GameData.GetTotemSlotForSpell((uint)updateData.UnitData.CreatedBySpell);
+                        if (totemSlot >= 0)
+                        {
+                            TotemCreated totem = new();
+                            totem.Slot = (byte)totemSlot;
+                            totem.Totem = guid;
+                            totem.Duration = 120000;
+                            totem.SpellId = (uint)updateData.UnitData.CreatedBySpell;
+                            totem.CannotDismiss = true;
+                            SendPacketToClient(totem);
+                        }
+                    }
                 }
                 int UNIT_NPC_FLAGS = LegacyVersion.GetUpdateField(UnitField.UNIT_NPC_FLAGS);
                 if (UNIT_NPC_FLAGS >= 0 && updateMaskArray[UNIT_NPC_FLAGS])

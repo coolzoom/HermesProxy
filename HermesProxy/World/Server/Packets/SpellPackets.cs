@@ -1527,6 +1527,41 @@ namespace HermesProxy.World.Server.Packets
         public uint SpellId;
     }
 
+    class TotemCreated : ServerPacket
+    {
+        public TotemCreated() : base(Opcode.SMSG_TOTEM_CREATED) { }
+
+        public override void Write()
+        {
+            _worldPacket.WriteUInt8(Slot);
+            _worldPacket.WritePackedGuid128(Totem);
+            _worldPacket.WriteUInt32(Duration);
+            _worldPacket.WriteUInt32(SpellId);
+            _worldPacket.WriteFloat(TimeMod);
+            _worldPacket.WriteBit(CannotDismiss);
+            _worldPacket.FlushBits();
+        }
+        public byte Slot;
+        public WowGuid128 Totem;
+        public uint Duration;
+        public uint SpellId;
+        public float TimeMod = 1;
+        public bool CannotDismiss = false;
+    }
+
+    class TotemDestroyed : ClientPacket
+    {
+        public TotemDestroyed(WorldPacket packet) : base(packet) { }
+
+        public override void Read()
+        {
+            Slot = _worldPacket.ReadUInt8();
+            Guid = _worldPacket.ReadPackedGuid128();
+        }
+        public byte Slot;
+        public WowGuid Guid;
+    }
+
     public class SetSpellModifier : ServerPacket
     {
         public SetSpellModifier(Opcode opcode) : base(opcode, ConnectionType.Instance) { }

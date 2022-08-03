@@ -71,6 +71,8 @@ namespace HermesProxy.World.Client
                             continue;
                         if (logEntry.QuestID != objective.QuestID)
                             continue;
+                        if (logEntry.ObjectiveProgress[objective.StorageIndex] == null)
+                            continue;
 
                         currentCount = (uint)logEntry.ObjectiveProgress[objective.StorageIndex];
                         break;
@@ -213,6 +215,38 @@ namespace HermesProxy.World.Client
             enchant.DurationLeft = packet.ReadUInt32();
             enchant.OwnerGuid = packet.ReadGuid().To128(GetSession().GameState);
             SendPacketToClient(enchant);
+        }
+
+        [PacketHandler(Opcode.SMSG_ENCHANTMENT_LOG)]
+        void HandleEnchantmentLog(WorldPacket packet)
+        {
+            EnchantmentLog enchantment = new EnchantmentLog();
+            if (LegacyVersion.AddedInVersion(ClientVersionBuild.V2_0_1_6180))
+            {
+                enchantment.Owner = packet.ReadPackedGuid().To128(GetSession().GameState);
+                enchantment.Caster = packet.ReadPackedGuid().To128(GetSession().GameState);
+            }
+            else
+            {
+                enchantment.Owner = packet.ReadGuid().To128(GetSession().GameState);
+                enchantment.Caster = packet.ReadGuid().To128(GetSession().GameState);
+            }
+            enchantment.ItemID = packet.ReadInt32();
+            var session = GetSession().GameState;
+
+            for (int i = 0; i < 23; i++)
+            {
+                if (session.GetItemId(session.GetInventorySlotItem(i).To128(session)).Equals((uint)enchantment.ItemID))
+                {
+                    enchantment.ItemGUID = session.GetInventorySlotItem(i).To128(session);
+                    break;
+                }
+            }
+            if (enchantment.ItemGUID == null)
+                return;
+
+            enchantment.Enchantment = packet.ReadInt32();
+            SendPacketToClient(enchantment);
         }
     }
 }

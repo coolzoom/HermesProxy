@@ -186,5 +186,30 @@ namespace HermesProxy.World.Server
             packet.WriteUInt32(ammo.ItemId);
             SendPacketToServer(packet);
         }
+
+        [PacketHandler(Opcode.CMSG_CANCEL_TEMP_ENCHANTMENT)]
+        void HandleCancelTempEnchantment(CancelTempEnchantment cancel)
+        {
+            if (LegacyVersion.RemovedInVersion(ClientVersionBuild.V2_0_1_6180))
+                return;
+            WorldPacket packet = new WorldPacket(Opcode.CMSG_CANCEL_TEMP_ENCHANTMENT);
+            packet.WriteUInt32(cancel.EnchantmentSlot);
+            SendPacketToServer(packet);
+        }
+
+        [PacketHandler(Opcode.CMSG_WRAP_ITEM)]
+        void HandleWrapItem(WrapItem item)
+        {
+            WorldPacket packet = new WorldPacket(Opcode.CMSG_WRAP_ITEM);
+            byte giftBag = item.GiftBag != Enums.Classic.InventorySlots.Bag0 ? ModernVersion.AdjustInventorySlot(item.GiftBag) : item.GiftBag;
+            byte giftSlot = item.GiftBag == Enums.Classic.InventorySlots.Bag0 ? ModernVersion.AdjustInventorySlot(item.GiftSlot) : item.GiftSlot;
+            byte itemBag = item.ItemBag != Enums.Classic.InventorySlots.Bag0 ? ModernVersion.AdjustInventorySlot(item.ItemBag) : item.ItemBag;
+            byte itemSlot = item.ItemBag == Enums.Classic.InventorySlots.Bag0 ? ModernVersion.AdjustInventorySlot(item.ItemSlot) : item.ItemSlot;
+            packet.WriteUInt8(giftBag);
+            packet.WriteUInt8(giftSlot);
+            packet.WriteUInt8(itemBag);
+            packet.WriteUInt8(itemSlot);
+            SendPacketToServer(packet);
+        }
     }
 }

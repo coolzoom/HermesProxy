@@ -17,6 +17,44 @@ namespace HermesProxy.World.Server
             SendPacketToServer(packet);
         }
 
+        [PacketHandler(Opcode.CMSG_GET_ACCOUNT_CHARACTER_LIST)]
+        void HandleGetAccountCharacterList(GetAccountCharacterListRequest request)
+        {
+            GetAccountCharacterListResult response = new();
+            response.Token = request.Token;
+
+            foreach (var ownCharacter in GetSession().GameState.OwnCharacters)
+            {
+                response.CharacterList.Add(new AccountCharacterListEntry
+                {
+                    AccountId = WowGuid128.Create(HighGuidType703.WowAccount, GetSession().GameAccountInfo.Id),
+                    CharacterGuid = ownCharacter.Guid,
+                    RealmVirtualAddress = GetSession().RealmId.GetAddress(),
+                    RealmName = "", // If empty the realm name will not be displayed
+                    LastLoginUnixSec = ownCharacter.LastPlayedTime,
+
+                    Name = ownCharacter.Name,
+                    Race = ownCharacter.RaceId,
+                    Class = ownCharacter.ClassId,
+                    Sex = ownCharacter.SexId,
+                    Level = ownCharacter.ExperienceLevel,
+                });
+            }
+
+            SendPacket(response);
+        }
+
+        [PacketHandler(Opcode.CMSG_GENERATE_RANDOM_CHARACTER_NAME)]
+        void HandleGenerateRandomCharacterNameRequest(GenerateRandomCharacterNameRequest randomCharacterName)
+        {
+            GenerateRandomCharacterNameResult result = new();
+
+            // The client can generate the name itself
+            result.Success = false;
+
+            SendPacket(result);
+        }
+
         [PacketHandler(Opcode.CMSG_CREATE_CHARACTER)]
         void HandleCreateCharacter(CreateCharacter charCreate)
         {
@@ -181,6 +219,15 @@ namespace HermesProxy.World.Server
                 pvp.ArenaTeams.Add(new ArenaTeamInspectData());
                 SendPacket(pvp);
             }
+        }
+
+        [PacketHandler(Opcode.CMSG_CHARACTER_RENAME_REQUEST)]
+        void HandleCharacterRenameRequest(CharacterRenameRequest rename)
+        {
+            WorldPacket packet = new WorldPacket(Opcode.CMSG_CHARACTER_RENAME_REQUEST);
+            packet.WriteGuid(rename.Guid.To64());
+            packet.WriteCString(rename.NewName);
+            SendPacketToServer(packet);
         }
     }
 }

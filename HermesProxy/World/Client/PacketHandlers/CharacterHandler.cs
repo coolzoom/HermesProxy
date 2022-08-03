@@ -27,7 +27,6 @@ namespace HermesProxy.World.Client
                 EnumCharactersResult.CharacterInfo char1 = new EnumCharactersResult.CharacterInfo();
                 PlayerCache cache = new PlayerCache();
                 char1.Guid = packet.ReadGuid().To128(GetSession().GameState);
-                GetSession().GameState.OwnCharacters.Add(char1.Guid);
                 char1.Name = cache.Name = packet.ReadCString();
                 char1.RaceId = cache.RaceId = (Race)packet.ReadUInt8();
                 char1.ClassId = cache.ClassId = (Class)packet.ReadUInt8();
@@ -97,6 +96,7 @@ namespace HermesProxy.World.Client
                 char1.ExpansionChosen = true;
                 charEnum.Characters.Add(char1);
             }
+            GetSession().GameState.OwnCharacters = charEnum.Characters;
 
             charEnum.RaceUnlockData.Add(new EnumCharactersResult.RaceUnlock(1, true, false, false));
             charEnum.RaceUnlockData.Add(new EnumCharactersResult.RaceUnlock(2, true, false, false));
@@ -568,6 +568,20 @@ namespace HermesProxy.World.Client
             for (byte i = 0; i < 3; i++)
                 inspect.ArenaTeams.Add(GetSession().GameState.GetArenaTeamDataForPlayer(inspect.PlayerGUID, slot));
             SendPacketToClient(inspect);
+        }
+
+        [PacketHandler(Opcode.SMSG_CHARACTER_RENAME_RESULT)]
+        void HandleCharacterRenameResult(WorldPacket packet)
+        {
+            CharacterRenameResult rename = new();
+            Enums.Vanilla.ResponseCodes legacyCode = (Enums.Vanilla.ResponseCodes)packet.ReadUInt8();
+            rename.Result = (Enums.Classic.ResponseCodes)Enum.Parse(typeof(Enums.Classic.ResponseCodes), legacyCode.ToString());
+            if (rename.Result == Enums.Classic.ResponseCodes.Success)
+            {
+                rename.Guid = packet.ReadGuid().To128(GetSession().GameState);
+                rename.Name = packet.ReadCString();
+            }
+            SendPacketToClient(rename);
         }
     }
 }

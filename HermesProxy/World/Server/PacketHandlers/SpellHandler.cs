@@ -104,11 +104,15 @@ namespace HermesProxy.World.Server
         [PacketHandler(Opcode.CMSG_CAST_SPELL)]
         void HandleCastSpell(CastSpell cast)
         {
+            // Artificial lag is needed for spell packets,
+            // or spells will bug out and glow if spammed.
+            System.Threading.Thread.Sleep(20);
+
             if (GameData.NextMeleeSpells.Contains(cast.Cast.SpellID) ||
                 GameData.AutoRepeatSpells.Contains(cast.Cast.SpellID))
             {
                 ClientCastRequest castRequest = new ClientCastRequest();
-                castRequest.Timestamp = Time.UnixTime;
+                castRequest.Timestamp = Environment.TickCount;
                 castRequest.SpellId = cast.Cast.SpellID;
                 castRequest.SpellXSpellVisualId = cast.Cast.SpellXSpellVisualID;
                 castRequest.ClientGUID = cast.Cast.CastID;
@@ -134,7 +138,7 @@ namespace HermesProxy.World.Server
             else
             {
                 ClientCastRequest castRequest = new ClientCastRequest();
-                castRequest.Timestamp = Time.UnixTime;
+                castRequest.Timestamp = Environment.TickCount;
                 castRequest.SpellId = cast.Cast.SpellID;
                 castRequest.SpellXSpellVisualId = cast.Cast.SpellXSpellVisualID;
                 castRequest.ClientGUID = cast.Cast.CastID;
@@ -148,8 +152,9 @@ namespace HermesProxy.World.Server
                     }
                     else
                     {
-                        if (GetSession().GameState.CurrentClientNormalCast.Timestamp + 10 < castRequest.Timestamp)
+                        if (GetSession().GameState.CurrentClientNormalCast.Timestamp + 10000 < castRequest.Timestamp)
                         {
+                            System.Console.WriteLine("VERY DELAYED SPEEEEL");
                             SendCastRequestFailed(GetSession().GameState.CurrentClientNormalCast, false);
                             GetSession().GameState.CurrentClientNormalCast = null;
                             foreach (var pending in GetSession().GameState.PendingClientCasts)
@@ -190,8 +195,12 @@ namespace HermesProxy.World.Server
         [PacketHandler(Opcode.CMSG_PET_CAST_SPELL)]
         void HandlePetCastSpell(PetCastSpell cast)
         {
+            // Artificial lag is needed for spell packets,
+            // or spells will bug out and glow if spammed.
+            System.Threading.Thread.Sleep(20);
+
             ClientCastRequest castRequest = new ClientCastRequest();
-            castRequest.Timestamp = Time.UnixTime;
+            castRequest.Timestamp = Environment.TickCount;
             castRequest.SpellId = cast.Cast.SpellID;
             castRequest.SpellXSpellVisualId = cast.Cast.SpellXSpellVisualID;
             castRequest.ClientGUID = cast.Cast.CastID;
@@ -205,7 +214,7 @@ namespace HermesProxy.World.Server
                 }
                 else
                 {
-                    if (GetSession().GameState.CurrentClientPetCast.Timestamp + 10 < castRequest.Timestamp)
+                    if (GetSession().GameState.CurrentClientPetCast.Timestamp + 10000 < castRequest.Timestamp)
                     {
                         SendCastRequestFailed(GetSession().GameState.CurrentClientPetCast, true);
                         GetSession().GameState.CurrentClientPetCast = null;
@@ -237,8 +246,12 @@ namespace HermesProxy.World.Server
         [PacketHandler(Opcode.CMSG_USE_ITEM)]
         void HandleUseItem(UseItem use)
         {
+            // Artificial lag is needed for spell packets,
+            // or spells will bug out and glow if spammed.
+            System.Threading.Thread.Sleep(20);
+
             ClientCastRequest castRequest = new ClientCastRequest();
-            castRequest.Timestamp = Time.UnixTime;
+            castRequest.Timestamp = Environment.TickCount;
             castRequest.SpellId = use.Cast.SpellID;
             castRequest.SpellXSpellVisualId = use.Cast.SpellXSpellVisualID;
             castRequest.ClientGUID = use.Cast.CastID;
@@ -253,7 +266,7 @@ namespace HermesProxy.World.Server
                 }
                 else
                 {
-                    if (GetSession().GameState.CurrentClientNormalCast.Timestamp + 10 < castRequest.Timestamp)
+                    if (GetSession().GameState.CurrentClientNormalCast.Timestamp + 10000 < castRequest.Timestamp)
                     {
                         SendCastRequestFailed(GetSession().GameState.CurrentClientNormalCast, false);
                         GetSession().GameState.CurrentClientNormalCast = null;
@@ -288,6 +301,10 @@ namespace HermesProxy.World.Server
         [PacketHandler(Opcode.CMSG_CANCEL_CAST)]
         void HandleCancelCast(CancelCast cast)
         {
+            // Artificial lag is needed for spell packets,
+            // or spells will bug out and glow if spammed.
+            System.Threading.Thread.Sleep(20);
+
             WorldPacket packet = new WorldPacket(Opcode.CMSG_CANCEL_CAST);
             if (LegacyVersion.AddedInVersion(ClientVersionBuild.V3_0_2_9056))
                 packet.WriteUInt8(0);
@@ -297,8 +314,22 @@ namespace HermesProxy.World.Server
         [PacketHandler(Opcode.CMSG_CANCEL_CHANNELLING)]
         void HandleCancelChannelling(CancelChannelling cast)
         {
+            // Artificial lag is needed for spell packets,
+            // or spells will bug out and glow if spammed.
+            System.Threading.Thread.Sleep(20);
+
             WorldPacket packet = new WorldPacket(Opcode.CMSG_CANCEL_CHANNELLING);
             packet.WriteInt32(cast.SpellID);
+            SendPacketToServer(packet);
+        }
+        [PacketHandler(Opcode.CMSG_CANCEL_AUTO_REPEAT_SPELL)]
+        void HandleCancelAutoRepeatSpell(CancelAutoRepeatSpell aura)
+        {
+            // Artificial lag is needed for spell packets,
+            // or spells will bug out and glow if spammed.
+            System.Threading.Thread.Sleep(20);
+
+            WorldPacket packet = new WorldPacket(Opcode.CMSG_CANCEL_AUTO_REPEAT_SPELL);
             SendPacketToServer(packet);
         }
         [PacketHandler(Opcode.CMSG_CANCEL_AURA)]
@@ -338,12 +369,6 @@ namespace HermesProxy.World.Server
                 }
             }
         }
-        [PacketHandler(Opcode.CMSG_CANCEL_AUTO_REPEAT_SPELL)]
-        void HandleCancelAutoRepeatSpell(CancelAutoRepeatSpell aura)
-        {
-            WorldPacket packet = new WorldPacket(Opcode.CMSG_CANCEL_AUTO_REPEAT_SPELL);
-            SendPacketToServer(packet);
-        }
         [PacketHandler(Opcode.CMSG_LEARN_TALENT)]
         void HandleLearnTalent(LearnTalent talent)
         {
@@ -364,6 +389,17 @@ namespace HermesProxy.World.Server
         void HandleSelfRes(SelfRes revive)
         {
             WorldPacket packet = new WorldPacket(Opcode.CMSG_SELF_RES);
+            SendPacketToServer(packet);
+        }
+
+        [PacketHandler(Opcode.CMSG_TOTEM_DESTROYED)]
+        void HandleTotemDestroyed(TotemDestroyed totem)
+        {
+            if (LegacyVersion.RemovedInVersion(ClientVersionBuild.V2_0_1_6180))
+                return;
+
+            WorldPacket packet = new WorldPacket(Opcode.CMSG_TOTEM_DESTROYED);
+            packet.WriteUInt8(totem.Slot);
             SendPacketToServer(packet);
         }
     }

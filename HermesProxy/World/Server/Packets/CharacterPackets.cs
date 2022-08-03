@@ -240,6 +240,106 @@ namespace HermesProxy.World.Server.Packets
         }
     }
 
+    public class AccountCharacterListEntry
+    {
+        public void Write(WorldPacket packet)
+        {
+            packet.WritePackedGuid128(AccountId);
+            packet.WritePackedGuid128(CharacterGuid);
+            packet.WriteUInt32(RealmVirtualAddress);
+            packet.WriteUInt8((byte)Race);
+            packet.WriteUInt8((byte)Class);
+            packet.WriteUInt8((byte)Sex);
+            packet.WriteUInt8(Level);
+
+            packet.WriteInt64(LastLoginUnixSec);
+
+            packet.ResetBitPos();
+            packet.WriteBits(Name.GetByteCount(), 6);
+            packet.WriteBits(RealmName.GetByteCount(), 9);
+
+            packet.WriteString(Name);
+            packet.WriteString(RealmName);
+        }
+
+        public WowGuid128 AccountId;
+
+        public uint RealmVirtualAddress;
+        public string RealmName;
+
+        public WowGuid128 CharacterGuid;
+        public string Name;
+        public Race Race;
+        public Class Class;
+        public Gender Sex;
+        public byte Level;
+        public long LastLoginUnixSec;
+    }
+
+    public class GetAccountCharacterListRequest : ClientPacket
+    {
+        public GetAccountCharacterListRequest(WorldPacket packet) : base(packet) { }
+
+        public override void Read()
+        {
+            Token = _worldPacket.ReadUInt32();
+        }
+
+        public uint Token = 0;
+    }
+
+    public class GetAccountCharacterListResult : ServerPacket
+    {
+        public GetAccountCharacterListResult() : base(Opcode.SMSG_GET_ACCOUNT_CHARACTER_LIST_RESULT)
+        {
+        }
+
+        public override void Write()
+        {
+            _worldPacket.WriteUInt32(Token);
+            _worldPacket.WriteUInt32((uint)CharacterList.Count);
+
+            _worldPacket.ResetBitPos();
+            _worldPacket.WriteBit(false); // unknown bit
+
+            foreach (var entry in CharacterList)
+                entry.Write(_worldPacket);
+        }
+
+        public uint Token = 0;
+        public List<AccountCharacterListEntry> CharacterList = new();
+    }
+
+    public class GenerateRandomCharacterNameRequest : ClientPacket
+    {
+        public GenerateRandomCharacterNameRequest(WorldPacket packet) : base(packet) { }
+
+        public override void Read()
+        {
+            Race = (Race)_worldPacket.ReadUInt8();
+            Sex = (Gender)_worldPacket.ReadUInt8();
+        }
+
+        public Race Race;
+        public Gender Sex;
+    }
+
+    public class GenerateRandomCharacterNameResult : ServerPacket
+    {
+        public GenerateRandomCharacterNameResult() : base(Opcode.SMSG_GENERATE_RANDOM_CHARACTER_NAME_RESULT) { }
+
+        public override void Write()
+        {
+            _worldPacket.WriteBool(Success);
+
+            _worldPacket.WriteBits(Name.Length, 6);
+            _worldPacket.WriteString(Name);
+        }
+
+        public bool Success;
+        public string Name = "";
+    }
+
     public class ChrCustomizationChoice : IComparable<ChrCustomizationChoice>
     {
         public uint ChrCustomizationOptionID;
@@ -981,5 +1081,41 @@ namespace HermesProxy.World.Server.Packets
         public int TeamGamesWon;
         public int PersonalGamesPlayed;
         public int PersonalRating;
+    }
+
+    public class CharacterRenameRequest : ClientPacket
+    {
+        public CharacterRenameRequest(WorldPacket packet) : base(packet) { }
+
+        public override void Read()
+        {
+            Guid = _worldPacket.ReadPackedGuid128();
+            NewName = _worldPacket.ReadString(_worldPacket.ReadBits<uint>(6));
+        }
+
+        public string NewName;
+        public WowGuid128 Guid;
+    }
+
+    public class CharacterRenameResult : ServerPacket
+    {
+        public CharacterRenameResult() : base(Opcode.SMSG_CHARACTER_RENAME_RESULT) { }
+
+        public override void Write()
+        {
+            _worldPacket.WriteUInt8((byte)Result);
+            _worldPacket.WriteBit(Guid != null);
+            _worldPacket.WriteBits(Name.GetByteCount(), 6);
+            _worldPacket.FlushBits();
+
+            if (Guid != null)
+                _worldPacket.WritePackedGuid128(Guid);
+
+            _worldPacket.WriteString(Name);
+        }
+
+        public string Name = "";
+        public Enums.Classic.ResponseCodes Result = 0;
+        public WowGuid128 Guid;
     }
 }
