@@ -48,7 +48,7 @@ namespace HermesProxy.World.Client
                     quest.DisplayPopup = packet.ReadBool();
             }
 
-            if (quest.QuestFlags[0].HasAnyFlag(QuestFlags.HiddenRewards) && LegacyVersion.RemovedInVersion(ClientVersionBuild.V3_3_5a_12340))
+            if (quest.QuestFlags[0].HasAnyFlag(QuestFlags.HiddenRewards) && LegacyVersion.RemovedInVersion(ClientVersionBuild.V3_3_5_12340))
             {
                 packet.ReadUInt32(); // Hidden Chosen Items
                 packet.ReadUInt32(); // Hidden Items

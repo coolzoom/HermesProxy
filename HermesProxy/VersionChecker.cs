@@ -26,8 +26,8 @@ namespace HermesProxy
                     return true;
                 case ClientVersionBuild.V2_4_3_8606:
                     return true;
-                case ClientVersionBuild.V3_3_5a_12340:
-                    return false;
+                case ClientVersionBuild.V3_3_5_12340:
+                    return true;
             }
 
             return false;
@@ -101,6 +101,7 @@ namespace HermesProxy
             {
                 1 => ClientVersionBuild.V1_12_1_5875,
                 2 => ClientVersionBuild.V2_4_3_8606,
+                3 => ClientVersionBuild.V3_3_5_12340,
                 _ => ClientVersionBuild.Zero,
             };
         }
@@ -203,8 +204,8 @@ namespace HermesProxy
                     return ClientVersionBuild.V1_12_1_5875;
                 case ClientVersionBuild.V2_4_3_8606:
                     return ClientVersionBuild.V2_4_3_8606;
-                case ClientVersionBuild.V3_3_5a_12340:
-                    return ClientVersionBuild.V3_3_5a_12340;
+                case ClientVersionBuild.V3_3_5_12340:
+                    return ClientVersionBuild.V3_3_5_12340;
             }
             return ClientVersionBuild.Zero;
         }
@@ -328,8 +329,9 @@ namespace HermesProxy
                 case ClientVersionBuild.V1_12_1_5875:
                     return typeof(World.Enums.V1_12_1_5875.ResponseCodes);
                 case ClientVersionBuild.V2_4_3_8606:
-                case ClientVersionBuild.V3_3_5a_12340:
                     return typeof(World.Enums.V2_4_3_8606.ResponseCodes);
+                case ClientVersionBuild.V3_3_5_12340:
+                    return typeof(World.Enums.V3_3_5_12340.ResponseCodes);
             }
             return null;
         }
@@ -363,7 +365,7 @@ namespace HermesProxy
             string str = VersionString;
             str = str.Substring(str.IndexOf('_') + 1);
             str = str.Substring(str.IndexOf('_') + 1);
-            str = str.Substring(0, str.IndexOf("_"));
+            str = str.Substring(0, 1);//str.IndexOf("_")); error for 3.3.5a
             return (byte)UInt32.Parse(str);
         }
 

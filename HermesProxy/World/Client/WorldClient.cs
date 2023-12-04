@@ -95,6 +95,9 @@ namespace HermesProxy.World.Client
                 case ClientVersionBuild.V2_4_3_8606:
                     _worldCrypt = new TbcWorldCrypt();
                     break;
+                case ClientVersionBuild.V3_3_5_12340:
+                    _worldCrypt = new WlkWorldCrypt();
+                    break;
             }
 
             if (_worldCrypt != null)
@@ -399,14 +402,14 @@ namespace HermesProxy.World.Client
 
         private void HandleAuthChallenge(WorldPacket packet)
         {
-            if (Settings.ServerBuild >= ClientVersionBuild.V3_3_5a_12340)
+            if (Settings.ServerBuild >= ClientVersionBuild.V3_3_5_12340)
             {
                 uint one = packet.ReadUInt32();
             }
 
             uint seed = packet.ReadUInt32();
 
-            if (Settings.ServerBuild >= ClientVersionBuild.V3_3_5a_12340)
+            if (Settings.ServerBuild >= ClientVersionBuild.V3_3_5_12340)
             {
                 BigInteger seed1 = packet.ReadBytes(16).ToBigInteger();
                 BigInteger seed2 = packet.ReadBytes(16).ToBigInteger();
@@ -443,7 +446,7 @@ namespace HermesProxy.World.Client
 
             packet.WriteUInt32(clientSeed);
 
-            if (Settings.ServerBuild >= ClientVersionBuild.V3_3_5a_12340)
+            if (Settings.ServerBuild >= ClientVersionBuild.V3_3_5_12340)
             {
                 packet.WriteUInt32(_realm.Id.Region);
                 packet.WriteUInt32(_realm.Id.Site);
