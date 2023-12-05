@@ -376,17 +376,17 @@ uint8 header[5];
 */
     public class LegacyServerPacketHeader
     {
-        public const int StructSize = sizeof(uint) + sizeof(ushort);
-        public uint Size;
+        public const int StructSize = sizeof(ushort) + sizeof(ushort);
+        public ushort Size;
         public ushort Opcode;
         public void Read(byte[] buffer)
         {
-            Size = Framework.Util.NetworkUtility.EndianConvert(BitConverter.ToUInt32(buffer, 0));
+            Size = Framework.Util.NetworkUtility.EndianConvert(BitConverter.ToUInt16(buffer, 0));
             Opcode = BitConverter.ToUInt16(buffer, sizeof(ushort));
         }
         public void Write(ByteBuffer byteBuffer)
         {
-            byteBuffer.WriteUInt32(Size);
+            byteBuffer.WriteUInt16(Size);
             byteBuffer.WriteUInt16(Opcode);
         }
 

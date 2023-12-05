@@ -17,14 +17,15 @@ namespace HermesProxy.World.Client
             SendPacketToClient(new Pong(serial));
         }
 
-        [PacketHandler(Opcode.SMSG_TUTORIAL_FLAGS)]
-        void HandleTutorialFlags(WorldPacket packet)
-        {
-            TutorialFlags tutorials = new TutorialFlags();
-            for (byte i = 0; i < (byte)Tutorials.Max; ++i)
-                tutorials.TutorialData[i] = packet.ReadUInt32();
-            SendPacketToClient(tutorials);
-        }
+        //ZZTODO, CRASHES THE HERMES PROXY
+        //[PacketHandler(Opcode.SMSG_TUTORIAL_FLAGS)]
+        //void HandleTutorialFlags(WorldPacket packet)
+        //{
+        //    TutorialFlags tutorials = new TutorialFlags();
+        //    for (byte i = 0; i < (byte)Tutorials.Max; ++i)
+        //        tutorials.TutorialData[i] = packet.ReadUInt32();
+        //    SendPacketToClient(tutorials);
+        //}
 
         [PacketHandler(Opcode.SMSG_ACCOUNT_DATA_TIMES)]
         void HandleAccountDataTimes(WorldPacket packet)
