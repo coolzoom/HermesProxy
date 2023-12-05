@@ -189,18 +189,18 @@ namespace HermesProxy.World.Client
                         byte[] buffer = new byte[packetSize];
 
                         // copy the opcode into the new buffer
-                        buffer[0] = headerBuffer[2];
-                        buffer[1] = headerBuffer[3];
+                        buffer[0] = headerBuffer[5];
+                        buffer[1] = headerBuffer[4];
 
-                        if (!await ReceiveBufferFully(new ArraySegment<byte>(buffer, 2, buffer.Length - 2)))
-                        {
-                            Log.PrintNet(LogType.Error, LogNetDir.S2P, "Socket Closed By GameWorldServer (payload)");
-                            if (_isSuccessful == null)
-                                _isSuccessful = false;
-                            else if (GetSession().WorldClient == this)
-                                GetSession().OnDisconnect();
-                            return;
-                        }
+                        //if (!await ReceiveBufferFully(new ArraySegment<byte>(buffer, 4, buffer.Length - 4)))
+                        //{
+                        //    Log.PrintNet(LogType.Error, LogNetDir.S2P, "Socket Closed By GameWorldServer (payload)");
+                        //    if (_isSuccessful == null)
+                        //        _isSuccessful = false;
+                        //    else if (GetSession().WorldClient == this)
+                        //        GetSession().OnDisconnect();
+                        //    return;
+                        //}
 
                         WorldPacket packet = new WorldPacket(buffer);
                         packet.SetReceiveTime(Environment.TickCount);
