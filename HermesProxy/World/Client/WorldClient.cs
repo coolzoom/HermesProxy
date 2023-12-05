@@ -182,7 +182,7 @@ namespace HermesProxy.World.Client
 
                     LegacyServerPacketHeader header = new LegacyServerPacketHeader();
                     header.Read(headerBuffer);
-                    ushort packetSize = header.Size;
+                    uint packetSize = header.Size;
 
                     if (packetSize != 0)
                     {
@@ -444,7 +444,7 @@ namespace HermesProxy.World.Client
             if (Settings.ServerBuild >= ClientVersionBuild.V3_0_2_9056)
                 packet.WriteUInt32(zero); // LoginServerType
 
-            packet.WriteUInt32(clientSeed);
+            packet.WriteUInt32(clientSeed); //recvPacket.read(authSession->LocalChallenge); std::array<uint8, 4> 
 
             if (Settings.ServerBuild >= ClientVersionBuild.V3_3_5_12340)
             {

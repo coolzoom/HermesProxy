@@ -534,6 +534,7 @@ namespace HermesProxy.World.Server
 
             _realmId = new RealmId((byte)authSession.RegionID, (byte)authSession.BattlegroupID, authSession.RealmID);
             GetSession().WorldClient = new Client.WorldClient();
+
             if (!GetSession().WorldClient.ConnectToWorldServer(GetSession().RealmManager.GetRealm(_realmId), GetSession()))
             {
                 SendAuthResponseError(BattlenetRpcErrorCode.BadServer);
