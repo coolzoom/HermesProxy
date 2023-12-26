@@ -85,7 +85,7 @@ namespace HermesProxy.World.Client
                         ReadMovementUpdateBlock(packet, guid, null, i);
                         break;
                     }
-                    case UpdateTypeLegacy.CreateObject1:
+                    case UpdateTypeLegacy.CreateObject1://type of packet when create update message
                     {
                         var oldGuid = packet.ReadPackedGuid();
 
@@ -95,7 +95,7 @@ namespace HermesProxy.World.Client
                             if (!GetSession().GameState.ObjectSpawnCount.ContainsKey(oldGuid))
                                 GetSession().GameState.ObjectSpawnCount.Add(oldGuid, 0);
                             else if (oldGuid.GetHighType() == HighGuidType.GameObject && GetSession().GameState.DespawnedGameObjects.Contains(oldGuid))
-                                    GetSession().GameState.IncrementObjectSpawnCounter(oldGuid);
+                                GetSession().GameState.IncrementObjectSpawnCounter(oldGuid);
                         }
 
                         var guid = oldGuid.To128(GetSession().GameState);
@@ -121,22 +121,35 @@ namespace HermesProxy.World.Client
 
                         if (updateData.Guid == GetSession().GameState.CurrentPlayerGuid)
                             GetSession().GameState.CurrentPlayerStorage.CompletedQuests.WriteAllCompletedIntoArray(updateData.ActivePlayerData.QuestCompleted);
-
                         if (guid.IsItem() && updateData.ObjectData.EntryID != null &&
-                           !GameData.ItemTemplates.ContainsKey((uint)updateData.ObjectData.EntryID))
+                            !GameData.ItemTemplates.ContainsKey((uint)updateData.ObjectData.EntryID))
                         {
                             missingItemTemplates.Add((uint)updateData.ObjectData.EntryID);
                         }
 
-                        if (updateData.CreateData.MoveInfo != null || !guid.IsWorldObject() )
-                        {
+                        //if (updateData.CreateData.MoveInfo != null || !guid.IsWorldObject()))//
+                        //{
+                        //updateObject.ObjectUpdates.Add(updateData);//zz 20231209 2210 modern client crash because of this
+                        //if (auraUpdate.Auras.Count != 0)
+                        //    auraUpdates.Add(auraUpdate);
+                        //}
+                        //if (updateData.CreateData.MoveInfo != null && 
+                        //       (guid.IsCreature() || guid.IsPlayer() || guid.IsItem() /*|| guid.IsTransport()*/)
+                        //       )//zz 20231209 2224 can log in now, modern client crash because of IsTransport
+                        //    {
+                        //    updateObject.ObjectUpdates.Add(updateData);
+                        //    if (auraUpdate.Auras.Count != 0)
+                        //        auraUpdates.Add(auraUpdate);
+                        //}
+                        if (updateData.CreateData.MoveInfo != null && guid.IsWorldObject())//zz 20231209 22333 some object has motion info but crash client
+                            {
                             updateObject.ObjectUpdates.Add(updateData);
                             if (auraUpdate.Auras.Count != 0)
                                 auraUpdates.Add(auraUpdate);
                         }
                         else
                             Log.Print(LogType.Error, $"Broken create1 without position for {guid}");
-                        
+
                         break;
                     }
                     case UpdateTypeLegacy.CreateObject2:
@@ -278,7 +291,7 @@ namespace HermesProxy.World.Client
             if (updateObject.ObjectUpdates.Count != 0 ||
                 updateObject.DestroyedGuids.Count != 0 ||
                 updateObject.OutOfRangeGuids.Count != 0)
-                SendPacketToClient(updateObject);
+                SendPacketToClient(updateObject);////crash client
 
             foreach (var auraUpdate in auraUpdates)
                 SendPacketToClient(auraUpdate);

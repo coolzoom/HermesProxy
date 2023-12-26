@@ -184,6 +184,17 @@ namespace HermesProxy.World.Client
                     header.Read(headerBuffer);
                     ushort packetSize = header.Size;
 
+                    //todo large data
+                    if ((headerBuffer[0] & 0x80) != 0)
+                    {
+                        // need to resize the buffer
+                        byte temp = headerBuffer[0];
+                        //ReserveData(5);
+                        //ReceiveData[0] = (byte)((0x7f & temp));
+
+                        //Remaining = 4;
+                    }
+
                     if (packetSize != 0)
                     {
                         byte[] buffer = new byte[packetSize];

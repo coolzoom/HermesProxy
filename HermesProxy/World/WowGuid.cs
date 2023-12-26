@@ -55,6 +55,23 @@ namespace HermesProxy.World
             switch (GetHighType())
             {
                 case HighGuidType.Player:
+                //case HighGuidType.Transport: //zztodo, crash modern client while update object
+                //case HighGuidType.MOTransport://zztodo, crash modern client while update object
+                case HighGuidType.Creature:
+                //case HighGuidType.Vehicle://zztodo, crash modern client while update object
+                case HighGuidType.Pet:
+                case HighGuidType.GameObject:
+                case HighGuidType.DynamicObject:
+                case HighGuidType.Corpse:
+                    return true;
+            }
+            return false;
+        }
+        public bool IsMotionObject()
+        {
+            switch (GetHighType())
+            {
+                case HighGuidType.Player:
                 case HighGuidType.Transport:
                 case HighGuidType.MOTransport:
                 case HighGuidType.Creature:

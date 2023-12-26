@@ -1,3 +1,17 @@
+﻿# stop here
+20231210, can login using 335 server, 253/114 client
+newer client wont be easy at this moment
+```
+coolzoom — 10/12/2023 20:43
+?? im thinking whether it is possible for me try to port the update field from the 3.4.0 47168 to hermes https://github.com/RioMcBoo/CypherCoreClassicWOTLK. i recall there is something that prevented you from supporting newer classic era clients, probably something totally changed after a specific version? 
+brotalnia — 11/12/2023 02:20
+yes they switched to completely different update field system in patch 8.1, 1.14.3 and 2.5.4
+so whole update building code has to be rewritten
+its not just different indexes for fields, its a different system
+much worse than the original system in my opinion
+```
+
+
 # HermesProxy ![Build](https://github.com/WowLegacyCore/HermesProxy/actions/workflows/Build_Proxy.yml/badge.svg)
 
 This project enables play on existing legacy WoW emulation cores using the modern clients. It serves as a translation layer, converting all network traffic to the appropriate format each side can understand.
